@@ -14,7 +14,10 @@ const generateSubtasks = async (req, res) => {
       return res.status(400).json({ message: 'Task title is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash',
+      generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `Break down the following task into smaller, actionable subtasks. 
     Task: ${taskTitle}
@@ -25,7 +28,7 @@ const generateSubtasks = async (req, res) => {
     - Ordered logically
     - Each subtask should be concise (under 50 words)
     
-    Format your response as a JSON array of strings, where each string is a subtask.
+    You must respond ONLY with a valid JSON array of strings.
     Example: ["Research topic", "Create outline", "Write first draft", "Review and edit"]`;
 
     const result = await model.generateContent(prompt);
@@ -36,30 +39,24 @@ const generateSubtasks = async (req, res) => {
 
     let subtasks;
     try {
-      const jsonMatch = text.match(/\[.*\]/s);
-      if (jsonMatch) {
-        subtasks = JSON.parse(jsonMatch[0]);
-      } else {
-        subtasks = text.split('\n')
-          .filter(line => line.trim() && !line.includes('*') && !line.includes('-'))
-          .map(line => line.replace(/^\d+\.\s*/, '').trim())
-          .filter(line => line.length > 0)
-          .slice(0, 7);
+      subtasks = JSON.parse(text);
+      if (!Array.isArray(subtasks)) {
+        subtasks = Object.values(subtasks); // Attempt to recover if it returned an object
       }
     } catch (parseError) {
-      subtasks = text.split('\n')
-        .filter(line => line.trim())
-        .map(line => line.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '').trim())
-        .filter(line => line.length > 0)
-        .slice(0, 7);
+      console.error('JSON Parse Error:', parseError);
+      // Fallback manual parsing if JSON still fails
+      subtasks = text.replace(/```(?:json)?/g, '').split('\n')
+        .map(line => line.replace(/^[[\]",\s]+/, '').replace(/[[\]",\s]+$/, '').trim())
+        .filter(line => line.length > 0);
     }
 
     if (!subtasks || subtasks.length === 0) {
       subtasks = [
-        'Break down the main task into smaller steps',
-        'Gather necessary resources',
-        'Complete the first step',
-        'Review progress and continue'
+        `Analyze the requirements for: ${taskTitle}`,
+        'Break down into smaller steps',
+        'Execute the first step',
+        'Review progress'
       ];
     }
 
