@@ -72,10 +72,9 @@ const generateSubtasks = async (req, res) => {
     console.error('Error message:', error.message);
     
     const fallbackSubtasks = [
-      'Analyze the task requirements',
-      'Break down into smaller components',
-      'Execute the first component',
-      'Review and adjust as needed'
+      `Failed to generate AI subtasks for: ${req.body.taskTitle}`,
+      `Error details: ${error.message || 'Unknown error'}`,
+      'Please check backend logs or API keys'
     ];
 
     console.log('Using fallback subtasks:', fallbackSubtasks);
