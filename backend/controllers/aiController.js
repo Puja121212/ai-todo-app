@@ -14,7 +14,10 @@ const generateSubtasks = async (req, res) => {
       return res.status(400).json({ message: 'Task title is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-flash-latest',
+      generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `Break down the following task into smaller, actionable subtasks. 
     Task: ${taskTitle}
@@ -36,13 +39,7 @@ const generateSubtasks = async (req, res) => {
 
     let subtasks;
     try {
-      // Find JSON block in markdown
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        subtasks = JSON.parse(jsonMatch[0]);
-      } else {
-        subtasks = JSON.parse(text);
-      }
+      subtasks = JSON.parse(text);
       
       if (!Array.isArray(subtasks)) {
         subtasks = Object.values(subtasks);
