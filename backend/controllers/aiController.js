@@ -14,10 +14,7 @@ const generateSubtasks = async (req, res) => {
       return res.status(400).json({ message: 'Task title is required' });
     }
 
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
-      generationConfig: { responseMimeType: "application/json" }
-    });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const prompt = `Break down the following task into smaller, actionable subtasks. 
     Task: ${taskTitle}
@@ -39,9 +36,16 @@ const generateSubtasks = async (req, res) => {
 
     let subtasks;
     try {
-      subtasks = JSON.parse(text);
+      // Find JSON block in markdown
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        subtasks = JSON.parse(jsonMatch[0]);
+      } else {
+        subtasks = JSON.parse(text);
+      }
+      
       if (!Array.isArray(subtasks)) {
-        subtasks = Object.values(subtasks); // Attempt to recover if it returned an object
+        subtasks = Object.values(subtasks);
       }
     } catch (parseError) {
       console.error('JSON Parse Error:', parseError);
