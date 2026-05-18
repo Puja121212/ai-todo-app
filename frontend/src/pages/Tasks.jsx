@@ -114,11 +114,26 @@ const Tasks = () => {
     }
   };
 
+  // Toggle subtask completion
+  const handleToggleSubtask = async (task, subtaskIndex) => {
+    try {
+      const updatedSubtasks = [...task.subtasks];
+      updatedSubtasks[subtaskIndex].completed = !updatedSubtasks[subtaskIndex].completed;
+      const allCompleted = updatedSubtasks.every(st => st.completed);
+      const response = await taskAPI.updateTask(task._id, { ...task, subtasks: updatedSubtasks, status: allCompleted ? 'completed' : task.status });
+      setTasks(tasks.map(t => t._id === task._id ? response.task : t));
+      showToast.success('Subtask updated');
+    } catch (error) {
+      showToast.error('Failed to update subtask');
+    }
+  };
+
   const handleToggleTaskStatus = async (task) => {
     try {
-      const updatedStatus = task.status === 'completed' ? 'pending' : 'completed';
-      const response = await taskAPI.updateTask(task._id, { ...task, status: updatedStatus });
-      setTasks(tasks.map(t => t._id === task._id ? response.data.task : t));
+        const updatedStatus = task.status === 'completed' ? 'pending' : 'completed';
+        const response = await taskAPI.updateTask(task._id, { ...task, status: updatedStatus });
+        // Use the updated task from the API response
+        setTasks(tasks.map(t => t._id === task._id ? response.task : t));
       showToast.success(`Task marked as ${updatedStatus}`);
     } catch (error) {
       showToast.error('Failed to update task status');
@@ -400,6 +415,7 @@ const Tasks = () => {
                   onDelete={handleDeleteTask}
                   onToggleStatus={handleToggleTaskStatus}
                   onGenerateSubtasks={handleGenerateSubtasks}
+                  onToggleSubtask={handleToggleSubtask}
                 />
               ))}
             </div>

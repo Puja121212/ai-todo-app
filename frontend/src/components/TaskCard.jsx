@@ -11,7 +11,7 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 
-const TaskCard = ({ task, onEdit, onDelete, onToggleStatus, onGenerateSubtasks }) => {
+const TaskCard = ({ task, onEdit, onDelete, onToggleStatus, onGenerateSubtasks, onToggleSubtask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
   const { showToast } = useToast();
 
@@ -54,23 +54,8 @@ const TaskCard = ({ task, onEdit, onDelete, onToggleStatus, onGenerateSubtasks }
   const completedSubtasksCount = task.subtasks?.filter(st => st.completed).length || 0;
   const totalSubtasksCount = task.subtasks?.length || 0;
 
-  const handleToggleSubtask = async (subtaskIndex) => {
-    const updatedSubtasks = [...task.subtasks];
-    updatedSubtasks[subtaskIndex].completed = !updatedSubtasks[subtaskIndex].completed;
-    
-    // Check if all subtasks are completed
-    const allSubtasksCompleted = updatedSubtasks.every(st => st.completed);
-    
-    try {
-      // Update task with subtasks and potentially change main task status
-      await onEdit({ 
-        ...task, 
-        subtasks: updatedSubtasks,
-        status: allSubtasksCompleted ? 'completed' : task.status
-      });
-    } catch (error) {
-      showToast.error('Failed to update subtask');
-    }
+  const handleToggleSubtask = (subtaskIndex) => {
+    onToggleSubtask(task, subtaskIndex);
   };
 
   return (
