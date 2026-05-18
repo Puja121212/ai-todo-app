@@ -29,16 +29,11 @@ app.use(cors({
 
     const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin) || 
                         /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+    
+    const isVercel = origin.endsWith('.vercel.app');
 
-    if (process.env.NODE_ENV === 'production') {
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error('Not allowed by CORS'));
-    }
-
-    // In development/test environments, allow localhost/127.0.0.1 or any of the allowed origins
-    if (isLocalhost || allowedOrigins.includes(origin)) {
+    // Allow requests from localhost, Vercel deployments, or whitelisted origins
+    if (isLocalhost || isVercel || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
