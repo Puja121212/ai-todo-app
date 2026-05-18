@@ -25,7 +25,7 @@ app.use(cors({
       'http://localhost:5175',
       'http://localhost:5176',
       'http://localhost:5177',
-    ].filter(Boolean);
+    ].filter(Boolean).map(url => url.replace(/\/$/, ''));
 
     const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin) || 
                         /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
